@@ -116,6 +116,23 @@ module "ssh_sg" {
   ]
 }
 
+
+# Key-pair
+
+module "gen_pvt_key" {
+  source = "./modules/private_key_generater"
+
+}
+
+module "key_pair" {
+  source = "./modules/key_pair"
+
+  key_name = "my_key_007"
+  public_key = module.gen_pvt_key.public_key
+}
+
+
+
 # EC2
 
 module "ec2_1" {
@@ -126,6 +143,7 @@ module "ec2_1" {
   name = "ec2_1"
   subnet_id = module.public_subnet_1.id
   security_group_ids = [module.ssh_sg.id]
+  key_name = module.key_pair.key_name
 }
 
 module "ec2_2" {
@@ -136,6 +154,7 @@ module "ec2_2" {
   name = "ec2_2"
   subnet_id = module.public_subnet_1.id
   security_group_ids = [module.ssh_sg.id]
+  key_name = module.key_pair.key_name
 }
 
 module "ec2_3" {
@@ -147,6 +166,7 @@ module "ec2_3" {
   # availability_zone = "us-east-1a"
   subnet_id = module.public_subnet_1.id
   security_group_ids = [module.webserver_sg.id, module.ssh_sg.id]
+  key_name = module.key_pair.key_name
 }
 
 output "sgs" {
