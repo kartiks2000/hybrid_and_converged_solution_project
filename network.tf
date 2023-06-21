@@ -71,7 +71,7 @@ module "subnet_route_route_table_association_1" {
 module "subnet_route_route_table_association_2" {
   source = "./modules/route_table_association"
 
-  subnet_id = module.public_subnet_1.id
+  subnet_id = module.public_subnet_2.id
   route_table_id = module.public_route_table.id
 }
 
@@ -90,48 +90,68 @@ data "aws_ami" "amzn-linux-2023-ami" {
 
 # Security group
 
-module "webserver_sg" {
-  source = "./modules/security_group"
 
-  name = "webserver_sg"
-  description = "sg for web servers."
+module "webserver_sg" {
+  source = "./modules/security_group/common_security_groups/webserver_sg"
+
   vpc_id = module.vpc-1.id
-  ingress_rules = [
-    {
-      description      = "Https allow"
-      from_port        = 443
-      to_port          = 443
-      protocol         = "tcp"
-      cidr_blocks      = ["0.0.0.0/0"]
-      ipv6_cidr_blocks = []
-    },
-    {
-      description      = "Http allow"
-      from_port        = 80
-      to_port          = 80
-      protocol         = "tcp"
-      cidr_blocks      = ["0.0.0.0/0"]
-      ipv6_cidr_blocks = []
-    }
-  ]
 }
 
-module "ssh_sg" {
-  source = "./modules/security_group"
+# module "ssh_sg" {
+#   source = "./modules/security_group"
 
-  name = "ssh_sg"
-  description = "sg for SSH."
+#   name = "ssh_sg"
+#   description = "sg for SSH."
+#   vpc_id = module.vpc-1.id
+#   ingress_rules = [
+#     {
+#       description      = "SSH allow"
+#       from_port        = 22
+#       to_port          = 22
+#       protocol         = "tcp"
+#       cidr_blocks      = ["0.0.0.0/0"]
+#       ipv6_cidr_blocks = []
+#     }
+#   ]
+# }
+
+module "ssh_sg" {
+  source = "./modules/security_group/common_security_groups/ssh_sg"
+
   vpc_id = module.vpc-1.id
-  ingress_rules = [
-    {
-      description      = "SSH allow"
-      from_port        = 22
-      to_port          = 22
-      protocol         = "tcp"
-      cidr_blocks      = ["0.0.0.0/0"]
-      ipv6_cidr_blocks = []
-    }
-  ]
+}
+
+# module "icmp_sg" {
+#   source = "./modules/security_group"
+
+#   name = "icmp_sg"
+#   description = "ping for SSH."
+#   vpc_id = module.vpc-1.id
+#   ingress_rules = [
+#     {
+#       description      = "Ping allow"
+#       from_port = -1
+#       to_port = -1
+#       protocol = "icmp"
+#       cidr_blocks      = ["0.0.0.0/0"]
+#       ipv6_cidr_blocks = []
+#     }
+#   ]
+#   egress_rules = [{
+#     description      = "Ping allow"
+#       from_port = -1
+#       to_port = -1
+#       protocol = "icmp"
+#       cidr_blocks      = ["0.0.0.0/0"]
+#       ipv6_cidr_blocks = []
+#   }]
+# }
+
+
+module "icmp_sg" {
+  source = "./modules/security_group/common_security_groups/icmp_ping_sg"
+
+  vpc_id = module.vpc-1.id
 }
 
 
@@ -167,7 +187,7 @@ module "ec2_1" {
   instance_type = "t3.micro"
   name = "ec2_1"
   subnet_id = module.public_subnet_1.id
-  security_group_ids = [module.ssh_sg.id]
+  security_group_ids = [module.webserver_sg.id, module.ssh_sg.id, module.icmp_sg.id]
   key_name = module.key_pair.key_name
 }
 
@@ -178,7 +198,7 @@ module "ec2_2" {
   instance_type = "t3.micro"
   name = "ec2_2"
   subnet_id = module.public_subnet_2.id
-  security_group_ids = [module.ssh_sg.id]
+  security_group_ids = [module.webserver_sg.id, module.ssh_sg.id, module.icmp_sg.id]
   key_name = module.key_pair.key_name
 }
 
@@ -187,10 +207,10 @@ module "ec2_3" {
 
   ami           = data.aws_ami.amzn-linux-2023-ami.id
   instance_type = "t3.micro"
-  name = "ec2_2"
+  name = "ec2_3"
   # availability_zone = "us-east-1a"
   subnet_id = module.public_subnet_1.id
-  security_group_ids = [module.webserver_sg.id, module.ssh_sg.id]
+  security_group_ids = [module.webserver_sg.id, module.ssh_sg.id, module.icmp_sg.id]
   key_name = module.key_pair.key_name
 }
 
@@ -203,7 +223,7 @@ module "load_balancer_1" {
   name = "my-lb"
   security_groups = [module.webserver_sg.id, module.ssh_sg.id]
   subnets = [module.public_subnet_1.id, module.public_subnet_2.id]
-
+  enable_deletion_protection = false
 }
 
 
