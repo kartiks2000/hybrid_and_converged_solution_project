@@ -18,3 +18,7 @@ output "subnet_id" {
   value = aws_instance.web.subnet_id
 }
 
+output "id" {
+  value = aws_instance.web.id
+}
+

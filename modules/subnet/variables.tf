@@ -14,3 +14,9 @@ variable "public_ip_on_launch" {
   type = bool
   default = false
 }
+
+variable "availability_zone" {
+  type = string
+  nullable = false
+  default = ""
+}

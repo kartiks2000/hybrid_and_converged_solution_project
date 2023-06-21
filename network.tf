@@ -42,15 +42,33 @@ module "public_subnet_1" {
   source = "./modules/subnet"
 
   vpc_id = module.vpc-1.id
-  cidr_block = "10.0.0.0/18"
+  cidr_block = "10.0.1.0/24"
   name = "public_subnet_1" 
   public_ip_on_launch = true
+  availability_zone = "us-east-1a"
+}
+
+module "public_subnet_2" {
+  source = "./modules/subnet"
+
+  vpc_id = module.vpc-1.id
+  cidr_block = "10.0.2.0/24"
+  name = "public_subnet_2" 
+  public_ip_on_launch = true
+  availability_zone = "us-east-1b"
 }
 
 
 # Route table - subnet association
 
 module "subnet_route_route_table_association_1" {
+  source = "./modules/route_table_association"
+
+  subnet_id = module.public_subnet_1.id
+  route_table_id = module.public_route_table.id
+}
+
+module "subnet_route_route_table_association_2" {
   source = "./modules/route_table_association"
 
   subnet_id = module.public_subnet_1.id
@@ -159,7 +177,7 @@ module "ec2_2" {
   ami           = data.aws_ami.amzn-linux-2023-ami.id
   instance_type = "t3.micro"
   name = "ec2_2"
-  subnet_id = module.public_subnet_1.id
+  subnet_id = module.public_subnet_2.id
   security_group_ids = [module.ssh_sg.id]
   key_name = module.key_pair.key_name
 }
@@ -176,10 +194,56 @@ module "ec2_3" {
   key_name = module.key_pair.key_name
 }
 
-output "sgs" {
-  value = module.ec2_3.security_group_ids
+
+# load balancing
+
+module "load_balancer_1" {
+  source = "./modules/load_balancer"
+
+  name = "my-lb"
+  security_groups = [module.webserver_sg.id, module.ssh_sg.id]
+  subnets = [module.public_subnet_1.id, module.public_subnet_2.id]
+
 }
 
 
+module "load_balancing_target_group" {
+  source = "./modules/load_balancing_target_group"
 
+  name = "lbgroup1"
+  vpc_id = module.vpc-1.id
+}
+
+# Attaching EC2 to target group
+
+module "tg1_el1" {
+  source = "./modules/load_balancing_target_ec2_register"
+
+  target_group_arn = module.load_balancing_target_group.arn
+  target_id = module.ec2_1.id
+  port = 80
+}
+
+module "tg1_el2" {
+  source = "./modules/load_balancing_target_ec2_register"
+
+  target_group_arn = module.load_balancing_target_group.arn
+  target_id = module.ec2_2.id
+  port = 80
+}
+
+module "tg1_el3" {
+  source = "./modules/load_balancing_target_ec2_register"
+
+  target_group_arn = module.load_balancing_target_group.arn
+  target_id = module.ec2_3.id
+  port = 80
+}
+
+module "lb_listener" {
+  source = "./modules/load_balancer_listner"
+
+  load_balancer_arn = module.load_balancer_1.arn
+  target_group_arn = module.load_balancing_target_group.arn
+}
 
