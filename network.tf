@@ -47,4 +47,44 @@ module "public_subnet_1" {
 }
 
 
+data "aws_ami" "amzn-linux-2023-ami" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["al2023-ami-2023.*-x86_64"]
+  }
+}
+
+# EC2
+
+module "ec2_1" {
+  source = "./modules/ec2"
+
+  ami           = data.aws_ami.amzn-linux-2023-ami.id
+  instance_type = "t3.micro"
+  name = "ec2_1"
+}
+
+module "ec2_2" {
+  source = "./modules/ec2"
+
+  ami           = data.aws_ami.amzn-linux-2023-ami.id
+  instance_type = "t3.micro"
+  name = "ec2_2"
+}
+
+module "ec2_3" {
+  source = "./modules/ec2"
+
+  ami           = data.aws_ami.amzn-linux-2023-ami.id
+  instance_type = "t3.micro"
+  name = "ec2_2"
+  availability_zone = "us-east-1a"
+}
+
+output "sgs" {
+  value = module.ec2_3.security_group_ids
+}
 
