@@ -44,7 +44,19 @@ module "public_subnet_1" {
   vpc_id = module.vpc-1.id
   cidr_block = "10.0.0.0/18"
   name = "public_subnet_1" 
+  public_ip_on_launch = true
 }
+
+
+# Route table - subnet association
+
+module "subnet_route_route_table_association_1" {
+  source = "./modules/route_table_association"
+
+  subnet_id = module.public_subnet_1.id
+  route_table_id = module.public_route_table.id
+}
+
 
 
 data "aws_ami" "amzn-linux-2023-ami" {
@@ -57,6 +69,53 @@ data "aws_ami" "amzn-linux-2023-ami" {
   }
 }
 
+
+# Security group
+
+module "webserver_sg" {
+  source = "./modules/security_group"
+
+  name = "webserver_sg"
+  description = "sg for web servers."
+  vpc_id = module.vpc-1.id
+  ingress_rules = [
+    {
+      description      = "Https allow"
+      from_port        = 443
+      to_port          = 443
+      protocol         = "tcp"
+      cidr_blocks      = ["0.0.0.0/0"]
+      ipv6_cidr_blocks = []
+    },
+    {
+      description      = "Http allow"
+      from_port        = 80
+      to_port          = 80
+      protocol         = "tcp"
+      cidr_blocks      = ["0.0.0.0/0"]
+      ipv6_cidr_blocks = []
+    }
+  ]
+}
+
+module "ssh_sg" {
+  source = "./modules/security_group"
+
+  name = "ssh_sg"
+  description = "sg for SSH."
+  vpc_id = module.vpc-1.id
+  ingress_rules = [
+    {
+      description      = "SSH allow"
+      from_port        = 22
+      to_port          = 22
+      protocol         = "tcp"
+      cidr_blocks      = ["0.0.0.0/0"]
+      ipv6_cidr_blocks = []
+    }
+  ]
+}
+
 # EC2
 
 module "ec2_1" {
@@ -65,6 +124,8 @@ module "ec2_1" {
   ami           = data.aws_ami.amzn-linux-2023-ami.id
   instance_type = "t3.micro"
   name = "ec2_1"
+  subnet_id = module.public_subnet_1.id
+  security_group_ids = [module.ssh_sg.id]
 }
 
 module "ec2_2" {
@@ -73,6 +134,8 @@ module "ec2_2" {
   ami           = data.aws_ami.amzn-linux-2023-ami.id
   instance_type = "t3.micro"
   name = "ec2_2"
+  subnet_id = module.public_subnet_1.id
+  security_group_ids = [module.ssh_sg.id]
 }
 
 module "ec2_3" {
@@ -81,10 +144,15 @@ module "ec2_3" {
   ami           = data.aws_ami.amzn-linux-2023-ami.id
   instance_type = "t3.micro"
   name = "ec2_2"
-  availability_zone = "us-east-1a"
+  # availability_zone = "us-east-1a"
+  subnet_id = module.public_subnet_1.id
+  security_group_ids = [module.webserver_sg.id, module.ssh_sg.id]
 }
 
 output "sgs" {
   value = module.ec2_3.security_group_ids
 }
+
+
+
 

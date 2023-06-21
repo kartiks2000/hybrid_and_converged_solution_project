@@ -3,7 +3,7 @@ resource "aws_instance" "web" {
   instance_type = var.instance_type
   availability_zone = var.availability_zone != "" ? var.availability_zone : null
   key_name = var.key_name != "" ? var.key_name : null
-  security_groups = var.security_groups != [] ? var.security_groups : []
+  vpc_security_group_ids = var.security_group_ids != [] ? var.security_group_ids : []
   subnet_id = var.subnet_id != "" ? var.subnet_id : null
 
   tags = {

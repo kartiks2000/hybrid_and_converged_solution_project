@@ -28,7 +28,7 @@ variable "launch_template" {
   default = ""
 }
 
-variable "security_groups" {
+variable "security_group_ids" {
   type = list(string)
   nullable = false
   default = []
