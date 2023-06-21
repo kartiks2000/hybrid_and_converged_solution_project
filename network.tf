@@ -131,6 +131,13 @@ module "key_pair" {
   public_key = module.gen_pvt_key.public_key
 }
 
+resource "null_resource" "download_key" {
+
+  provisioner "local-exec" {
+    command = "echo '${module.gen_pvt_key.public_key}' > ./My-SSH-key.pem"
+  }
+}
+
 
 
 # EC2
