@@ -71,7 +71,7 @@ resource "aws_eip" "eip" {}
 
 resource "aws_nat_gateway" "example" {
   allocation_id = aws_eip.eip.id
-  subnet_id     = aws_subnet.public_subnets[0].id
+  subnet_id     = element(aws_subnet.public_subnets.*.id, 0) # 'element' function gets the value on the specific index in the array.
 
   tags = {
     Name = var.nat_gateway_name
