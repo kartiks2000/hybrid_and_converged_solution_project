@@ -1,32 +1,32 @@
-# VPC
+# # VPC
 
-output "vpc-1-id" {
-  value = module.vpc-1.id
-}
-
-
-# Route table
-
-output "public_route_table" {
-  value = module.public_route_table.id
-}
+# output "vpc-1-id" {
+#   value = module.vpc-1.id
+# }
 
 
-# Subnet
+# # Route table
 
-output "subnet_id" {
-  value = module.public_subnet_1.id
-}
+# output "public_route_table" {
+#   value = module.public_route_table.id
+# }
 
 
-# Internet gateway
+# # Subnet
 
-output "internet_gateway_id" {
-  value = module.internet_gateway.id
-}
+# output "subnet_id" {
+#   value = module.public_subnet_1.id
+# }
 
-output "internet_gateway_arn" {
-  value = module.internet_gateway.igw_arn
-}
+
+# # Internet gateway
+
+# output "internet_gateway_id" {
+#   value = module.internet_gateway.id
+# }
+
+# output "internet_gateway_arn" {
+#   value = module.internet_gateway.igw_arn
+# }
 
 
