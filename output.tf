@@ -29,4 +29,10 @@
 #   value = module.internet_gateway.igw_arn
 # }
 
+output "public_subnets_ids" {
+  value = module.network-1.public_subnet_ids
+}
 
+output "private_subnet_ids" {
+  value = module.network-1.private_subnet_ids
+}

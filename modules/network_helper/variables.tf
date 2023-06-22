@@ -35,4 +35,34 @@ variable "private_subnets" {
   default = []
 }
 
+variable "internet_gateway_name" {
+  type = string
+  default = "igw"
+}
+
+variable "public_route_table_name" {
+  type = string
+  default = "Public_RT"
+}
+
+
+variable "private_route_table_name" {
+  type = string
+  default = "Private_RT"
+}
+
+variable "internet_gateway_route_destination_cidr" {
+  type = string
+  default = "0.0.0.0/0"
+}
+
+variable "nat_gateway_name" {
+  type = string
+  default = "nat_gw"
+}
+
+variable "nat_route_destination_cidr" {
+  type = string
+  default = "0.0.0.0/0"
+}
 
