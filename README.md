@@ -1,1 +1,1 @@
-# Makes Terraform development easy. Just clone, use and have fun!
+# Hybrid and Converged Solutions Final Project
